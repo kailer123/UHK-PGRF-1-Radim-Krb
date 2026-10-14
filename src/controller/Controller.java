@@ -13,12 +13,20 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Controller {
 
-    private Point currentPoint;
+    private enum Mode { LINE, POLYGON }
 
+    private Mode mode = Mode.LINE;
+    private Point lineStart;
+    private Point currentPoint;
+    private Frame frame;
+    private String baseTitle;
+
+    private final List<Line> lines = new ArrayList<>();
     private final Polygon polygon;
     private final Canvas canvas;
     private final LineRasterizer rasterizer;
@@ -35,6 +43,10 @@ public class Controller {
     }
 
     public void init() {
+        frame = (Frame) SwingUtilities.getWindowAncestor(canvas);
+        baseTitle = frame.getTitle();
+        updateTitle();
+
         canvas.clear();
         polygonRasterizer.rasterize(polygon);
         canvas.addMouseListener(new MouseAdapter() {
@@ -45,6 +57,9 @@ public class Controller {
                     return;
                 }
                 currentPoint = getPoint(e);
+                if (mode == Mode.LINE) {
+                    lineStart = currentPoint;
+                }
                 render();
             }
 
@@ -53,7 +68,12 @@ public class Controller {
                 if (!SwingUtilities.isLeftMouseButton(e) || currentPoint == null) {
                     return;
                 }
-                polygon.addPoint(getPoint(e));
+                if (mode == Mode.LINE) {
+                    lines.add(new Line(lineStart, getPoint(e), LINE_COLOR));
+                } else {
+                    polygon.addPoint(getPoint(e));
+                }
+                lineStart = null;
                 currentPoint = null;
                 render();
             }
@@ -73,18 +93,40 @@ public class Controller {
         canvas.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_C) {
-                    polygon.clear();
-                    currentPoint = null;
-                    render();
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_C -> {
+                        lines.clear();
+                        polygon.clear();
+                        lineStart = null;
+                        currentPoint = null;
+                        render();
+                    }
+                    case KeyEvent.VK_L -> setMode(Mode.LINE);
+                    case KeyEvent.VK_P -> setMode(Mode.POLYGON);
                 }
             }
         });
         canvas.repaint();
     }
 
+    private void setMode(Mode newMode) {
+        mode = newMode;
+        lineStart = null;
+        currentPoint = null;
+        updateTitle();
+        render();
+    }
+
+    private void updateTitle() {
+        String modeName = mode == Mode.LINE ? "Line" : "Polygon";
+        frame.setTitle(baseTitle + " | Mode: " + modeName + " (L = line, P = polygon, C = clear)");
+    }
+
     private void render() {
         canvas.clear();
+        for (Line line : lines) {
+            rasterizer.rasterize(line);
+        }
         polygonRasterizer.rasterize(polygon);
         if (currentPoint != null) {
             renderPreview();
@@ -93,6 +135,11 @@ public class Controller {
     }
 
     private void renderPreview() {
+        if (mode == Mode.LINE) {
+            rasterizer.rasterize(new Line(lineStart, currentPoint, PREVIEW_COLOR));
+            return;
+        }
+
         List<Point> points = polygon.getPoints();
 
         if (points.isEmpty()) {
