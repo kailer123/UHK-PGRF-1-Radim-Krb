@@ -3,6 +3,14 @@ package graphics.rasterizer;
 import graphics.Raster;
 import model.Line;
 
+/**
+ * Line rasterization using the trivial algorithm, based on the line equation y = k * x + q.
+ *     Gentle lines (|dy| <= |dx|) step along x and compute y = k * x + q.
+ *     Steep lines (|dy| > |dx|) step along y and compute x = k * y + q, so there are no gaps.
+ *     Endpoints are swapped when needed, so lines can be drawn in all directions.
+ *     Vertical lines are handled as steep lines, a degenerate line (single point) as one pixel.
+ *     The loop is limited to the visible part of the raster.
+ */
 public class TrivialLineRasterizer implements LineRasterizer {
 
     private final Raster raster;
