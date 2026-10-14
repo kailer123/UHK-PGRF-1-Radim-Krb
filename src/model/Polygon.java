@@ -20,6 +20,10 @@ public class Polygon {
         points.set(index, point);
     }
 
+    public void removePoint(int index) {
+        points.remove(index);
+    }
+
     public List<Point> getPoints() {
         return points;
     }

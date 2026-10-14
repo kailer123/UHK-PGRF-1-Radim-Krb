@@ -60,8 +60,12 @@ public class Controller {
             @Override
             public void mousePressed(MouseEvent e) {
                 canvas.requestFocusInWindow();
+                if (SwingUtilities.isRightMouseButton(e) && e.isShiftDown()) {
+                    deleteNearestVertex(getPoint(e));
+                    return;
+                }
                 if (SwingUtilities.isRightMouseButton(e)) {
-                    startEdit(getPoint(e));
+                    selectNearestVertex(getPoint(e));
                     return;
                 }
                 if (!SwingUtilities.isLeftMouseButton(e)) {
@@ -124,7 +128,7 @@ public class Controller {
         });
     }
 
-    private void startEdit(Point mouse) {
+    private void selectNearestVertex(Point mouse) {
         stopEdit();
         int bestDistance = Integer.MAX_VALUE;
 
@@ -148,6 +152,17 @@ public class Controller {
                 editedLineStart = distanceStart <= distanceEnd;
             }
         }
+    }
+
+    private void deleteNearestVertex(Point mouse) {
+        selectNearestVertex(mouse);
+        if (editedPolygonIndex >= 0) {
+            polygon.removePoint(editedPolygonIndex);
+        } else if (editedLineIndex >= 0) {
+            lines.remove(editedLineIndex);
+        }
+        stopEdit();
+        render();
     }
 
     private void moveEditedVertex(Point mouse) {
@@ -191,7 +206,7 @@ public class Controller {
 
     private void updateTitle() {
         String modeName = mode == Mode.LINE ? "Line" : "Polygon";
-        frame.setTitle(baseTitle + " | Mode: " + modeName + " (L = line, P = polygon, C = clear, right drag = move vertex)");
+        frame.setTitle(baseTitle + " | Mode: " + modeName + " (L = line, P = polygon, C = clear, right drag = move vertex, shift + right click = delete vertex)");
     }
 
     private void render() {
