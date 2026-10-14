@@ -37,7 +37,10 @@ public class TrivialLineRasterizer implements LineRasterizer {
             float k = (y2 - y1) / (float) (x2 - x1);
             float q = y1 - k * x1;
 
-            for (int x = x1; x <= x2; x++) {
+            int startX = Math.max(x1, 0);
+            int endX = Math.min(x2, raster.getWidth() - 1);
+
+            for (int x = startX; x <= endX; x++) {
                 float y = k * x + q;
                 raster.setPixel(x, Math.round(y), color);
             }
@@ -50,7 +53,10 @@ public class TrivialLineRasterizer implements LineRasterizer {
             float k = (x2 - x1) / (float) (y2 - y1);
             float q = x1 - k * y1;
 
-            for (int y = y1; y <= y2; y++) {
+            int startY = Math.max(y1, 0);
+            int endY = Math.min(y2, raster.getHeight() - 1);
+
+            for (int y = startY; y <= endY; y++) {
                 float x = k * y + q;
                 raster.setPixel(Math.round(x), y, color);
             }
