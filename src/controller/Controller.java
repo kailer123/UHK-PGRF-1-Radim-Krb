@@ -9,6 +9,7 @@ import model.Point;
 import model.Polygon;
 import view.Canvas;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.lang.reflect.Array;
@@ -47,12 +48,18 @@ public class Controller {
         canvas.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                if (!SwingUtilities.isLeftMouseButton(e)) {
+                    return;
+                }
                 startPoint = getPoint(e);
                 currentPoint = startPoint;
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
+                if (!SwingUtilities.isLeftMouseButton(e) || startPoint == null) {
+                    return;
+                }
                 lines.add(new Line(startPoint, getPoint(e), LINE_COLOR));
                 currentPoint = null;
                 startPoint = null;
@@ -82,6 +89,9 @@ public class Controller {
     private void render() {
         canvas.clear();
         polygonRasterizer.rasterize(polygon);
+        if (startPoint != null && currentPoint != null) {
+            rasterizer.rasterize(new Line(startPoint, currentPoint, PREVIEW_COLOR));
+        }
         canvas.repaint();
     }
 
