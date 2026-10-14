@@ -31,7 +31,7 @@ public class Controller {
 
     public Controller(Canvas canvas) {
         this.canvas = canvas;
-        this.polygon = new Polygon();
+        this.polygon = new Polygon(lines);
         this.rasterizer = new TrivialLineRasterizer(canvas.getRaster());
         this.polygonRasterizer = new PolygonOutlineRasterizer(rasterizer);
 
@@ -43,7 +43,7 @@ public class Controller {
 
     public void init() {
         canvas.clear();
-        polygonRasterizer.rasterize(new Polygon(lines));
+        polygonRasterizer.rasterize(polygon);
         canvas.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
