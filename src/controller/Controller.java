@@ -90,7 +90,7 @@ public class Controller {
                 if (mode == Mode.LINE) {
                     lines.add(new Line(lineStart, getPoint(e), LINE_COLOR));
                 } else {
-                    polygon.addPoint(getPoint(e));
+                    addPolygonPoint(getPoint(e));
                 }
                 lineStart = null;
                 currentPoint = null;
@@ -234,10 +234,25 @@ public class Controller {
             return;
         }
 
-        rasterizer.rasterize(new Line(points.getLast(), currentPoint, PREVIEW_COLOR));
-        if (points.size() >= 2) {
-            rasterizer.rasterize(new Line(currentPoint, points.getFirst(), PREVIEW_COLOR));
+        if (points.size() == 1) {
+            rasterizer.rasterize(new Line(points.getFirst(), currentPoint, PREVIEW_COLOR));
+            return;
         }
+
+        int edge = polygon.findNearestEdge(currentPoint);
+        Point a = points.get(edge);
+        Point b = points.get((edge + 1) % points.size());
+        rasterizer.rasterize(new Line(a, currentPoint, PREVIEW_COLOR));
+        rasterizer.rasterize(new Line(currentPoint, b, PREVIEW_COLOR));
+    }
+
+    private void addPolygonPoint(Point point) {
+        if (polygon.getPoints().size() < 2) {
+            polygon.addPoint(point);
+            return;
+        }
+        int edge = polygon.findNearestEdge(point);
+        polygon.insertPoint(edge + 1, point);
     }
 
     private Point getPoint(MouseEvent e) {
