@@ -1,8 +1,6 @@
 import controller.Controller;
 import view.Window;
 
-import javax.swing.SwingUtilities;
-
 import static javax.swing.SwingUtilities.invokeLater;
 
 public class Main {

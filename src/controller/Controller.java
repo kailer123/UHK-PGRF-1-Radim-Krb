@@ -12,13 +12,15 @@ import view.Canvas;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Controller {
 
     private enum Mode { LINE, POLYGON }
+
+    private static final int LINE_COLOR = Color.WHITE.getRGB();
+    private static final int PREVIEW_COLOR = Color.RED.getRGB();
 
     private Mode mode = Mode.LINE;
     private Point lineStart;
@@ -32,9 +34,6 @@ public class Controller {
     private final LineRasterizer rasterizer;
     private final PolygonRasterizer polygonRasterizer;
 
-    private static final int LINE_COLOR = Color.WHITE.getRGB();
-    private static final int PREVIEW_COLOR = Color.RED.getRGB();
-
     public Controller(Canvas canvas) {
         this.canvas = canvas;
         this.polygon = new Polygon(LINE_COLOR);
@@ -47,8 +46,12 @@ public class Controller {
         baseTitle = frame.getTitle();
         updateTitle();
 
-        canvas.clear();
-        polygonRasterizer.rasterize(polygon);
+        initMouse();
+        initKeyboard();
+        render();
+    }
+
+    private void initMouse() {
         canvas.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -89,24 +92,27 @@ public class Controller {
                 render();
             }
         });
+    }
 
+    private void initKeyboard() {
         canvas.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 switch (e.getKeyCode()) {
-                    case KeyEvent.VK_C -> {
-                        lines.clear();
-                        polygon.clear();
-                        lineStart = null;
-                        currentPoint = null;
-                        render();
-                    }
+                    case KeyEvent.VK_C -> clear();
                     case KeyEvent.VK_L -> setMode(Mode.LINE);
                     case KeyEvent.VK_P -> setMode(Mode.POLYGON);
                 }
             }
         });
-        canvas.repaint();
+    }
+
+    private void clear() {
+        lines.clear();
+        polygon.clear();
+        lineStart = null;
+        currentPoint = null;
+        render();
     }
 
     private void setMode(Mode newMode) {
@@ -151,13 +157,6 @@ public class Controller {
         if (points.size() >= 2) {
             rasterizer.rasterize(new Line(currentPoint, points.getFirst(), PREVIEW_COLOR));
         }
-    }
-
-    private void starLine(MouseEvent e) {
-    }
-
-    private void finishPolygon(MouseEvent e) {
-        render();
     }
 
     private Point getPoint(MouseEvent e) {
