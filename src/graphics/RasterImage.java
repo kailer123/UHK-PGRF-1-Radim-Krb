@@ -3,6 +3,11 @@ package graphics;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+/**
+ * Raster implementation backed by a BufferedImage.
+ *
+ * @author Radim Krb
+ */
 public class RasterImage implements Raster {
 
     private final BufferedImage image;
@@ -36,6 +41,7 @@ public class RasterImage implements Raster {
 
     @Override
     public void setPixel(int x, int y, int color) {
+        // pixels outside the image are ignored, so nothing is drawn outside the canvas
         if (x >= 0 && x < image.getWidth() && y >= 0 && y < image.getHeight()) {
             image.setRGB(x, y, color);
         }

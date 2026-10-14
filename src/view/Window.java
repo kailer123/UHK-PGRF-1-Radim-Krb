@@ -3,6 +3,11 @@ package view;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Main application window containing the drawing canvas.
+ *
+ * @author Radim Krb
+ */
 public class Window extends JFrame {
 
     private final Canvas canvas;

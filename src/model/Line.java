@@ -1,5 +1,10 @@
 package model;
 
+/**
+ * Line segment between two points with a color. Immutable.
+ *
+ * @author Radim Krb
+ */
 public class Line {
 
     private final int color;

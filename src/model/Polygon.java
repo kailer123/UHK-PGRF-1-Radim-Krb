@@ -3,6 +3,12 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Polygon stored as a list of vertices.
+ * Edges are not stored – they are derived from consecutive vertices, so the polygon is always closed.
+ *
+ * @author Radim Krb
+ */
 public class Polygon {
 
     private final List<Point> points = new ArrayList<>();
@@ -40,6 +46,11 @@ public class Polygon {
         points.clear();
     }
 
+    /**
+     * Finds the edge nearest to the given point.
+     *
+     * @return index i of the edge from vertex i to vertex (i + 1) % n, or -1 if the polygon has no vertices
+     */
     public int findNearestEdge(Point point) {
         int n = points.size();
         int nearest = -1;
@@ -55,6 +66,11 @@ public class Polygon {
         return nearest;
     }
 
+    /**
+     * Squared distance from point p to segment ab.
+     * The point is projected onto the line ab and the parameter t is clamped to [0, 1],
+     * so the closest point always lies on the segment.
+     */
     private static double distanceToSegmentSquared(Point p, Point a, Point b) {
         double dx = b.getX() - a.getX();
         double dy = b.getY() - a.getY();

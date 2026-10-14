@@ -1,5 +1,10 @@
 package model;
 
+/**
+ * Point in raster coordinates. Immutable.
+ *
+ * @author Radim Krb
+ */
 public class Point {
 
     private final int x;
@@ -18,6 +23,7 @@ public class Point {
         return y;
     }
 
+    /** Squared distance to another point. The square root is not needed when comparing distances. */
     public int distanceSquared(Point other) {
         int dx = x - other.x;
         int dy = y - other.y;

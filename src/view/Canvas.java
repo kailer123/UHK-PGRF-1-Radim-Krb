@@ -9,6 +9,11 @@ import java.awt.Graphics;
 
 import javax.swing.JPanel;
 
+/**
+ * Swing panel that displays the raster image.
+ *
+ * @author Radim Krb
+ */
 public class Canvas extends JPanel {
 
     private final RasterImage image;

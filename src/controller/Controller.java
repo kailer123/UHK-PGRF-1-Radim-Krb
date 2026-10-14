@@ -15,6 +15,13 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Handles user input, keeps the scene (separate lines and one polygon) and renders it.
+ * L = line mode, P = polygon mode, left drag = draw, right drag = move the nearest vertex,
+ * Shift + right click = delete the nearest vertex, C = clear everything.
+ *
+ * @author Radim Krb
+ */
 public class Controller {
 
     private enum Mode { LINE, POLYGON }
@@ -23,11 +30,14 @@ public class Controller {
     private static final int PREVIEW_COLOR = Color.RED.getRGB();
 
     private Mode mode = Mode.LINE;
+    // start point of the line being drawn (line mode)
     private Point lineStart;
+    // mouse position while drawing, null = nothing is being drawn
     private Point currentPoint;
     private Frame frame;
     private String baseTitle;
 
+    // vertex being moved: polygon vertex index, or line index + which end of the line, -1 = none
     private int editedPolygonIndex = -1;
     private int editedLineIndex = -1;
     private boolean editedLineStart;
@@ -128,6 +138,7 @@ public class Controller {
         });
     }
 
+    /** Finds the vertex nearest to the mouse (polygon vertex or line endpoint) and remembers it for editing. */
     private void selectNearestVertex(Point mouse) {
         stopEdit();
         int bestDistance = Integer.MAX_VALUE;
@@ -154,6 +165,7 @@ public class Controller {
         }
     }
 
+    /** Deletes the nearest vertex. For a line, the whole line is deleted. */
     private void deleteNearestVertex(Point mouse) {
         selectNearestVertex(mouse);
         if (editedPolygonIndex >= 0) {
@@ -165,6 +177,7 @@ public class Controller {
         render();
     }
 
+    /** Moves the edited vertex. Points and lines are immutable, so they are replaced. */
     private void moveEditedVertex(Point mouse) {
         if (editedPolygonIndex >= 0) {
             polygon.setPoint(editedPolygonIndex, mouse);
@@ -186,6 +199,7 @@ public class Controller {
         editedLineIndex = -1;
     }
 
+    /** Clears the canvas and all data (C key). */
     private void clear() {
         stopEdit();
         lines.clear();
@@ -195,6 +209,7 @@ public class Controller {
         render();
     }
 
+    /** Switches the mode and cancels anything in progress. */
     private void setMode(Mode newMode) {
         stopEdit();
         mode = newMode;
@@ -209,6 +224,7 @@ public class Controller {
         frame.setTitle(baseTitle + " | Mode: " + modeName + " (L = line, P = polygon, C = clear, right drag = move vertex, shift + right click = delete vertex)");
     }
 
+    /** Redraws the whole scene: separate lines, the polygon and the preview while drawing. */
     private void render() {
         canvas.clear();
         for (Line line : lines) {
@@ -221,6 +237,11 @@ public class Controller {
         canvas.repaint();
     }
 
+    /**
+     * Draws the rubber-band preview in red.
+     * Line mode: a line from the start point to the mouse.
+     * Polygon mode: lines from the mouse to both vertices of the edge the new vertex will be inserted into.
+     */
     private void renderPreview() {
         if (mode == Mode.LINE) {
             rasterizer.rasterize(new Line(lineStart, currentPoint, PREVIEW_COLOR));
@@ -246,6 +267,7 @@ public class Controller {
         rasterizer.rasterize(new Line(currentPoint, b, PREVIEW_COLOR));
     }
 
+    /** Adds a vertex. With two or more vertices, it is inserted into the nearest edge. */
     private void addPolygonPoint(Point point) {
         if (polygon.getPoints().size() < 2) {
             polygon.addPoint(point);
