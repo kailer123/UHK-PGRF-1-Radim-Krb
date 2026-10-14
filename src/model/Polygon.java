@@ -24,4 +24,8 @@ public class Polygon {
         return color;
     }
 
+    public void clear() {
+        points.clear();
+    }
+
 }
