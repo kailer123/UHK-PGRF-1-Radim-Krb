@@ -13,8 +13,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Controller {
 
@@ -26,20 +24,14 @@ public class Controller {
     private final LineRasterizer rasterizer;
     private final PolygonRasterizer polygonRasterizer;
 
-    private final List<Line> lines = new ArrayList<Line>();
     private static final int LINE_COLOR = Color.WHITE.getRGB();
     private static final int PREVIEW_COLOR = Color.RED.getRGB();
 
     public Controller(Canvas canvas) {
         this.canvas = canvas;
-        this.polygon = new Polygon(lines);
+        this.polygon = new Polygon(LINE_COLOR);
         this.rasterizer = new TrivialLineRasterizer(canvas.getRaster());
         this.polygonRasterizer = new PolygonOutlineRasterizer(rasterizer);
-
-        lines.add(new Line(new Point(100, 100), new Point(300, 100), Color.WHITE.getRGB()));
-        lines.add(new Line(new Point(300, 100), new Point(350, 250), Color.WHITE.getRGB()));
-        lines.add(new Line(new Point(350, 250), new Point(200, 350), Color.WHITE.getRGB()));
-        lines.add(new Line(new Point(200, 350), new Point(100, 250), Color.WHITE.getRGB()));
     }
 
     public void init() {
@@ -60,7 +52,7 @@ public class Controller {
                 if (!SwingUtilities.isLeftMouseButton(e) || startPoint == null) {
                     return;
                 }
-                lines.add(new Line(startPoint, getPoint(e), LINE_COLOR));
+                polygon.addPoint(getPoint(e));
                 currentPoint = null;
                 startPoint = null;
                 render();

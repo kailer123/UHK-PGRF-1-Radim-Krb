@@ -1,6 +1,7 @@
 package graphics.rasterizer;
 
 import model.Line;
+import model.Point;
 import model.Polygon;
 
 import java.util.List;
@@ -15,19 +16,28 @@ public class PolygonOutlineRasterizer implements PolygonRasterizer {
 
     @Override
     public void rasterize(Polygon polygon) {
-        List<Line> lines = polygon.getLines();
-        rasterizeLines(lines);
+        List<Point> points = polygon.getPoints();
+        int n = points.size();
+        int color = polygon.getColor();
 
-        if (lines.size() > 1) {
-            Line last = lines.getLast();
-            Line first = lines.getFirst();
-            lineRasterizer.rasterize(new Line(last.getPoint2(), first.getPoint1(), last.getColor()));
+        if (n == 0) {
+            return;
         }
-    }
 
-    private void rasterizeLines(List<Line> lines) {
-        for (Line line : lines) {
-            lineRasterizer.rasterize(line);
+        if (n == 1) {
+            lineRasterizer.rasterize(new Line(points.get(0), points.get(0), color));
+            return;
+        }
+
+        if (n == 2) {
+            lineRasterizer.rasterize(new Line(points.get(0), points.get(1), color));
+            return;
+        }
+
+        for (int i = 0; i < n; i++) {
+            Point a = points.get(i);
+            Point b = points.get((i + 1) % n);
+            lineRasterizer.rasterize(new Line(a, b, color));
         }
     }
 
