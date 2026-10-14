@@ -13,10 +13,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.lang.reflect.Array;
+import java.util.List;
 
 public class Controller {
 
-    private Point startPoint;
     private Point currentPoint;
 
     private final Polygon polygon;
@@ -43,18 +43,17 @@ public class Controller {
                 if (!SwingUtilities.isLeftMouseButton(e)) {
                     return;
                 }
-                startPoint = getPoint(e);
-                currentPoint = startPoint;
+                currentPoint = getPoint(e);
+                render();
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (!SwingUtilities.isLeftMouseButton(e) || startPoint == null) {
+                if (!SwingUtilities.isLeftMouseButton(e) || currentPoint == null) {
                     return;
                 }
                 polygon.addPoint(getPoint(e));
                 currentPoint = null;
-                startPoint = null;
                 render();
             }
         });
@@ -62,7 +61,7 @@ public class Controller {
         canvas.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (startPoint == null) {
+                if (currentPoint == null) {
                     return;
                 }
                 currentPoint = getPoint(e);
@@ -81,10 +80,24 @@ public class Controller {
     private void render() {
         canvas.clear();
         polygonRasterizer.rasterize(polygon);
-        if (startPoint != null && currentPoint != null) {
-            rasterizer.rasterize(new Line(startPoint, currentPoint, PREVIEW_COLOR));
+        if (currentPoint != null) {
+            renderPreview();
         }
         canvas.repaint();
+    }
+
+    private void renderPreview() {
+        List<Point> points = polygon.getPoints();
+
+        if (points.isEmpty()) {
+            rasterizer.rasterize(new Line(currentPoint, currentPoint, PREVIEW_COLOR));
+            return;
+        }
+
+        rasterizer.rasterize(new Line(points.getLast(), currentPoint, PREVIEW_COLOR));
+        if (points.size() >= 2) {
+            rasterizer.rasterize(new Line(currentPoint, points.getFirst(), PREVIEW_COLOR));
+        }
     }
 
     private void starLine(MouseEvent e) {
