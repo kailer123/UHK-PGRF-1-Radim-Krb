@@ -40,6 +40,7 @@ public class Controller {
         canvas.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                canvas.requestFocusInWindow();
                 if (!SwingUtilities.isLeftMouseButton(e)) {
                     return;
                 }
@@ -72,6 +73,11 @@ public class Controller {
         canvas.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_C) {
+                    polygon.clear();
+                    currentPoint = null;
+                    render();
+                }
             }
         });
         canvas.repaint();
