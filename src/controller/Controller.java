@@ -28,6 +28,10 @@ public class Controller {
     private Frame frame;
     private String baseTitle;
 
+    private int editedPolygonIndex = -1;
+    private int editedLineIndex = -1;
+    private boolean editedLineStart;
+
     private final List<Line> lines = new ArrayList<>();
     private final Polygon polygon;
     private final Canvas canvas;
@@ -56,6 +60,10 @@ public class Controller {
             @Override
             public void mousePressed(MouseEvent e) {
                 canvas.requestFocusInWindow();
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    startEdit(getPoint(e));
+                    return;
+                }
                 if (!SwingUtilities.isLeftMouseButton(e)) {
                     return;
                 }
@@ -68,6 +76,10 @@ public class Controller {
 
             @Override
             public void mouseReleased(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    stopEdit();
+                    return;
+                }
                 if (!SwingUtilities.isLeftMouseButton(e) || currentPoint == null) {
                     return;
                 }
@@ -85,6 +97,11 @@ public class Controller {
         canvas.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
+                if (isEditing()) {
+                    moveEditedVertex(getPoint(e));
+                    render();
+                    return;
+                }
                 if (currentPoint == null) {
                     return;
                 }
@@ -107,7 +124,55 @@ public class Controller {
         });
     }
 
+    private void startEdit(Point mouse) {
+        stopEdit();
+        int bestDistance = Integer.MAX_VALUE;
+
+        List<Point> points = polygon.getPoints();
+        for (int i = 0; i < points.size(); i++) {
+            int distance = points.get(i).distanceSquared(mouse);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                editedPolygonIndex = i;
+            }
+        }
+
+        for (int i = 0; i < lines.size(); i++) {
+            Line line = lines.get(i);
+            int distanceStart = line.getPoint1().distanceSquared(mouse);
+            int distanceEnd = line.getPoint2().distanceSquared(mouse);
+            if (distanceStart < bestDistance || distanceEnd < bestDistance) {
+                bestDistance = Math.min(distanceStart, distanceEnd);
+                editedPolygonIndex = -1;
+                editedLineIndex = i;
+                editedLineStart = distanceStart <= distanceEnd;
+            }
+        }
+    }
+
+    private void moveEditedVertex(Point mouse) {
+        if (editedPolygonIndex >= 0) {
+            polygon.setPoint(editedPolygonIndex, mouse);
+        } else if (editedLineIndex >= 0) {
+            Line line = lines.get(editedLineIndex);
+            Line moved = editedLineStart
+                    ? new Line(mouse, line.getPoint2(), line.getColor())
+                    : new Line(line.getPoint1(), mouse, line.getColor());
+            lines.set(editedLineIndex, moved);
+        }
+    }
+
+    private boolean isEditing() {
+        return editedPolygonIndex >= 0 || editedLineIndex >= 0;
+    }
+
+    private void stopEdit() {
+        editedPolygonIndex = -1;
+        editedLineIndex = -1;
+    }
+
     private void clear() {
+        stopEdit();
         lines.clear();
         polygon.clear();
         lineStart = null;
@@ -116,6 +181,7 @@ public class Controller {
     }
 
     private void setMode(Mode newMode) {
+        stopEdit();
         mode = newMode;
         lineStart = null;
         currentPoint = null;
@@ -125,7 +191,7 @@ public class Controller {
 
     private void updateTitle() {
         String modeName = mode == Mode.LINE ? "Line" : "Polygon";
-        frame.setTitle(baseTitle + " | Mode: " + modeName + " (L = line, P = polygon, C = clear)");
+        frame.setTitle(baseTitle + " | Mode: " + modeName + " (L = line, P = polygon, C = clear, right drag = move vertex)");
     }
 
     private void render() {
