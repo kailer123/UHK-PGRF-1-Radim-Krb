@@ -18,4 +18,10 @@ public class Point {
         return y;
     }
 
+    public int distanceSquared(Point other) {
+        int dx = x - other.x;
+        int dy = y - other.y;
+        return dx * dx + dy * dy;
+    }
+
 }

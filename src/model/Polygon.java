@@ -16,6 +16,10 @@ public class Polygon {
         points.add(point);
     }
 
+    public void setPoint(int index, Point point) {
+        points.set(index, point);
+    }
+
     public List<Point> getPoints() {
         return points;
     }
